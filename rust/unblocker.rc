@@ -1,0 +1,32 @@
+#include <windows.h>
+
+1 ICON "../assets/unblocker.ico"
+
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",      "SaltSpectre"
+            VALUE "FileDescription", "Windows file unblocker utility that removes Zone.Identifier alternate data streams"
+            VALUE "FileVersion",     "1.0.0.0"
+            VALUE "InternalName",    "unblocker"
+            VALUE "LegalCopyright",  "Copyright © SaltSpectre 2025"
+            VALUE "OriginalFilename","unblocker.exe"
+            VALUE "ProductName",     "SaltSpectre's File Unblocker"
+            VALUE "ProductVersion",  "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END

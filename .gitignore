@@ -1,0 +1,20 @@
+# Rust
+/target/
+Cargo.lock
+
+# Windows
+*.exe
+*.pdb
+*.ilk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Build transcripts
+build-transcript.txt

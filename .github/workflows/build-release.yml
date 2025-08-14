@@ -1,0 +1,199 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          rust/target
+        key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-${{ matrix.target }}-
+          ${{ runner.os }}-cargo-
+    
+    - name: Generate version
+      id: version
+      shell: powershell
+      run: |
+        $date = Get-Date -Format "yy.MM.dd"
+        $runNumber = $env:GITHUB_RUN_NUMBER
+        if (-not $runNumber) { $runNumber = "0" }
+        $version = "$date.$runNumber"
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "DATE=$date" >> $env:GITHUB_OUTPUT
+        echo "Generated version: $version"
+    
+    - name: Update Cargo.toml version
+      shell: powershell
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $cargoPath = "rust/Cargo.toml"
+        $content = Get-Content $cargoPath -Raw
+        $content = $content -replace 'version = "[\d\.]+"', "version = `"$version`""
+        Set-Content $cargoPath $content -NoNewline
+        echo "Updated Cargo.toml version to: $version"
+    
+    - name: Build
+      working-directory: rust
+      run: cargo build --release --target ${{ matrix.target }}
+    
+    - name: Prepare artifact
+      shell: powershell
+      run: |
+        $target = "${{ matrix.target }}"
+        $arch = if ($target -eq "x86_64-pc-windows-msvc") { "x64" } else { "arm64" }
+        $artifactName = "portable-unblocker-$arch.exe"
+        $sourcePath = "rust/target/$target/release/unblocker.exe"
+        Copy-Item $sourcePath $artifactName
+        echo "ARTIFACT_NAME=$artifactName" >> $env:GITHUB_ENV
+        echo "ARTIFACT_ARCH=$arch" >> $env:GITHUB_ENV
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: portable-unblocker-${{ env.ARTIFACT_ARCH }}
+        path: ${{ env.ARTIFACT_NAME }}
+        retention-days: 90
+
+  build-installer:
+    needs: build
+    runs-on: windows-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Install WiX
+      run: dotnet tool install --global wix
+    
+    - name: Generate version
+      id: version
+      shell: powershell
+      run: |
+        $date = Get-Date -Format "yy.MM.dd"
+        $runNumber = $env:GITHUB_RUN_NUMBER
+        if (-not $runNumber) { $runNumber = "0" }
+        $version = "$date.$runNumber"
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Generated version: $version"
+    
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    
+    - name: Prepare executables for installer
+      shell: powershell
+      run: |
+        # Create rust/target structure for WiX
+        New-Item -ItemType Directory -Force "rust/target/x86_64-pc-windows-msvc/release"
+        New-Item -ItemType Directory -Force "rust/target/aarch64-pc-windows-msvc/release"
+        
+        # Copy artifacts to expected locations
+        Copy-Item "artifacts/portable-unblocker-x64/portable-unblocker-x64.exe" "rust/target/x86_64-pc-windows-msvc/release/unblocker.exe"
+        Copy-Item "artifacts/portable-unblocker-arm64/portable-unblocker-arm64.exe" "rust/target/aarch64-pc-windows-msvc/release/unblocker.exe"
+    
+    - name: Build MSI installer
+      working-directory: wix
+      shell: powershell
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        dotnet build -p:VERSION=$version
+        
+        # Rename MSI to final name
+        $finalName = "Unblocker-$version-Universal.msi"
+        Copy-Item "bin/Release/en-US/SaltSpectre-Unblocker.msi" $finalName
+        echo "MSI_NAME=$finalName" >> $env:GITHUB_ENV
+    
+    - name: Upload MSI artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: msi-installer
+        path: wix/${{ env.MSI_NAME }}
+        retention-days: 90
+
+  create-release:
+    needs: [build, build-installer]
+    runs-on: windows-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Generate version
+      id: version
+      shell: powershell
+      run: |
+        $date = Get-Date -Format "yy.MM.dd"
+        $runNumber = $env:GITHUB_RUN_NUMBER
+        if (-not $runNumber) { $runNumber = "0" }
+        $version = "$date.$runNumber"
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "TAG=v$version" >> $env:GITHUB_OUTPUT
+        echo "Generated version: $version"
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.version.outputs.TAG }}
+        name: "Release ${{ steps.version.outputs.VERSION }}"
+        body: |
+          🚀 **SaltSpectre File Unblocker ${{ steps.version.outputs.VERSION }}**
+          
+          Automated release built from commit ${{ github.sha }}
+          
+          **Downloads:**
+          - `Unblocker-${{ steps.version.outputs.VERSION }}-Universal.msi` - **MSI Installer (Recommended)** - Includes context menu integration
+          - `portable-unblocker-x64.exe` - AMD64 Portable (Intel/AMD 64-bit)
+          - `portable-unblocker-arm64.exe` - ARM64 Portable (Windows on ARM)
+          
+          **Installation:**
+          - **MSI Installer**: Run the MSI and choose per-user or system-wide installation
+          - **Portable**: Download appropriate executable and run directly (no context menu integration)
+          
+          **Usage:**
+          ```cmd
+          unblocker.exe "C:\path\to\file.exe"
+          unblocker.exe --verbose "C:\path\to\directory" 
+          ```
+        files: artifacts/**/*
+        prerelease: true
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

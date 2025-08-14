@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  
+  <?define ProductName = "SaltSpectre File Unblocker" ?>
+  <?define Manufacturer = "SaltSpectre" ?>
+  <?define ProductVersion = "$(var.VERSION)" ?>
+  <?define UpgradeCode = "{12345678-1234-1234-1234-123456789ABC}" ?>
+  
+  <Package Name="$(var.ProductName)" 
+           Version="$(var.ProductVersion)" 
+           Manufacturer="$(var.Manufacturer)" 
+           UpgradeCode="$(var.UpgradeCode)"
+           Language="1033"
+           Compressed="true"
+           InstallerVersion="500"
+           Scope="perMachine">
+    
+    <SummaryInformation Description="A secure Windows utility that removes Zone.Identifier alternate data streams to unblock files"
+                       Comments="Built with Rust for maximum security and performance"
+                       Keywords="unblock,zone,identifier,security,files" />
+    
+    <!-- Allow per-user installation -->
+    <Property Id="MSIINSTALLPERUSER" Value="1" />
+    
+    <!-- Architecture detection -->
+    <Condition Message="This application requires Windows 10 or later.">
+      <![CDATA[Installed OR (VersionNT >= 1000)]]>
+    </Condition>
+    
+    <!-- Upgrade logic -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." 
+                  AllowSameVersionUpgrades="true" />
+    
+    <!-- Media -->
+    <MediaTemplate EmbedCab="true" />
+    
+    <!-- Features -->
+    <Feature Id="MainFeature" 
+             Title="SaltSpectre File Unblocker" 
+             Description="Core application files and context menu integration"
+             Level="1"
+             ConfigurableDirectory="INSTALLFOLDER">
+      
+      <ComponentGroupRef Id="MainComponents" />
+      <ComponentGroupRef Id="ContextMenuComponents" />
+      
+    </Feature>
+    
+    <!-- UI -->
+    <UI>
+      <UIRef Id="WixUI_Advanced" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+      
+      <!-- Customize the installation scope dialog -->
+      <Publish Dialog="InstallScopeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="3">
+        WixAppFolder = "WixPerMachineFolder"
+      </Publish>
+      <Publish Dialog="InstallScopeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="3">
+        WixAppFolder = "WixPerUserFolder"
+      </Publish>
+    </UI>
+    
+    <!-- Properties for installation folders -->
+    <Property Id="APPLICATIONFOLDER" Secure="yes">
+      <RegistrySearch Id="FindInstallLocation"
+                      Root="HKMU"
+                      Key="Software\$(var.Manufacturer)\$(var.ProductName)"
+                      Name="InstallLocation"
+                      Type="raw" />
+    </Property>
+    
+    <!-- Set default installation directory -->
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
+    
+    <!-- Add/Remove Programs properties -->
+    <Property Id="ARPHELPLINK" Value="https://github.com/SaltSpectre/cs-SaltSpectre-Unblocker" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/SaltSpectre/cs-SaltSpectre-Unblocker" />
+    <Property Id="ARPPRODUCTICON" Value="UnblockerIcon.exe" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    
+  </Package>
+  
+</Wix>

@@ -1,0 +1,18 @@
+<Project Sdk="WiX.SDK/4.0.0">
+
+  <PropertyGroup>
+    <OutputName>SaltSpectre-Unblocker</OutputName>
+    <OutputType>Package</OutputType>
+    <WixSourcePath>.</WixSourcePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WiX.UI.WixUI" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixSource Include="Product.wxs" />
+    <WixSource Include="Components.wxs" />
+  </ItemGroup>
+
+</Project>
