@@ -1,5 +1,5 @@
 # Rust
-/target/
+target/
 Cargo.lock
 
 # Windows
@@ -12,6 +12,7 @@ Cargo.lock
 .idea/
 *.swp
 *.swo
+settings.local.json
 
 # Logs
 *.log
