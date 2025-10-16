@@ -1,78 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  
+
   <Fragment>
-    
-    <!-- Directory structure -->
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="ManufacturerFolder" Name="SaltSpectre">
-        <Directory Id="INSTALLFOLDER" Name="Unblocker" />
+        <Directory Id="INSTALLFOLDER" Name="FileUnblocker" />
       </Directory>
     </StandardDirectory>
-    
-    <!-- Per-user installation folder -->
-    <StandardDirectory Id="LocalAppDataFolder">
-      <Directory Id="LocalAppDataManufacturer" Name="SaltSpectre">
-        <Directory Id="INSTALLFOLDER_USER" Name="Unblocker" />
-      </Directory>
-    </StandardDirectory>
-    
   </Fragment>
-  
+
   <Fragment>
-    
-    <!-- Main application components -->
-    <ComponentGroup Id="MainComponents">
-      
-      <!-- AMD64 executable -->
-      <Component Id="UnblockerExe_x64" 
-                 Directory="INSTALLFOLDER" 
-                 Condition="VersionNT64">
-        <File Id="UnblockerExe_x64_File" 
-              Source="../rust/target/x86_64-pc-windows-msvc/release/unblocker.exe" 
+    <ComponentGroup Id="ApplicationFiles">
+
+      <Component Id="UnblockerExe" Directory="INSTALLFOLDER">
+        <File Id="UnblockerExe"
+              Source="$(var.EXECUTABLE_PATH)"
+              Name="unblocker.exe"
               KeyPath="true" />
       </Component>
-      
-      <!-- ARM64 executable -->
-      <Component Id="UnblockerExe_arm64" 
-                 Directory="INSTALLFOLDER" 
-                 Condition="MSIX64">
-        <File Id="UnblockerExe_arm64_File" 
-              Source="../rust/target/aarch64-pc-windows-msvc/release/unblocker.exe" 
-              KeyPath="true" />
+
+      <Component Id="PathEntry" Directory="INSTALLFOLDER" Guid="{B2C3D4E5-F6A7-8901-BCDE-F12345678901}">
+        <Environment Id="PATH"
+                     Name="PATH"
+                     Value="[INSTALLFOLDER]"
+                     Permanent="no"
+                     Action="set"
+                     System="no"
+                     Part="last" />
+        <RegistryValue Root="HKMU" Key="Software\SaltSpectre\FileUnblocker" Name="PathEntry" Type="string" Value="1" KeyPath="yes" />
       </Component>
-      
-      <!-- Installation registry key -->
-      <Component Id="InstallationRegistry" Directory="INSTALLFOLDER">
-        <RegistryKey Root="HKMU" Key="Software\SaltSpectre\SaltSpectre File Unblocker">
-          <RegistryValue Name="InstallLocation" Value="[INSTALLFOLDER]" Type="string" KeyPath="true" />
-          <RegistryValue Name="Version" Value="[ProductVersion]" Type="string" />
-        </RegistryKey>
-      </Component>
-      
-      <!-- PATH environment variable -->
-      <Component Id="PathEnvironment" Directory="INSTALLFOLDER">
-        <Environment Id="PATH" Name="PATH" Value="[INSTALLFOLDER]" Permanent="no" Part="last" Action="set" System="no" KeyPath="true" />
-      </Component>
-      
+
     </ComponentGroup>
-    
-    <!-- Context menu integration components -->
-    <ComponentGroup Id="ContextMenuComponents">
-      
-      <!-- Context menu for files -->
-      <Component Id="ContextMenuFiles" Directory="INSTALLFOLDER">
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ContextMenus">
+
+      <Component Id="FileContextMenu" Directory="INSTALLFOLDER" Guid="{C3D4E5F6-A7B8-9012-CDEF-123456789012}">
         <RegistryKey Root="HKMU" Key="Software\Classes\*\shell\SaltSpectre.Unblocker">
-          <RegistryValue Value="Unblock file with File Unblocker" Type="string" KeyPath="true" />
+          <RegistryValue Value="Unblock with File Unblocker" Type="string" KeyPath="true" />
           <RegistryValue Name="Icon" Value="[INSTALLFOLDER]unblocker.exe,0" Type="string" />
         </RegistryKey>
         <RegistryKey Root="HKMU" Key="Software\Classes\*\shell\SaltSpectre.Unblocker\command">
           <RegistryValue Value='"[INSTALLFOLDER]unblocker.exe" "%1"' Type="string" />
         </RegistryKey>
       </Component>
-      
-      <!-- Context menu for directories -->
-      <Component Id="ContextMenuDirectories" Directory="INSTALLFOLDER">
+
+      <Component Id="DirectoryContextMenu" Directory="INSTALLFOLDER" Guid="{E5F6A7B8-C9D0-1234-EF12-345678901234}">
         <RegistryKey Root="HKMU" Key="Software\Classes\Directory\shell\SaltSpectre.Unblocker">
           <RegistryValue Value="Unblock directory with File Unblocker" Type="string" KeyPath="true" />
           <RegistryValue Name="Icon" Value="[INSTALLFOLDER]unblocker.exe,0" Type="string" />
@@ -81,20 +55,18 @@
           <RegistryValue Value='"[INSTALLFOLDER]unblocker.exe" "%1"' Type="string" />
         </RegistryKey>
       </Component>
-      
-      <!-- Context menu for directory background -->
-      <Component Id="ContextMenuBackground" Directory="INSTALLFOLDER">
+
+      <Component Id="DirectoryBackgroundContextMenu" Directory="INSTALLFOLDER" Guid="{A7B8C9D0-E1F2-3456-1234-567890123456}">
         <RegistryKey Root="HKMU" Key="Software\Classes\Directory\Background\shell\SaltSpectre.Unblocker">
-          <RegistryValue Value="Unblock current directory with File Unblocker" Type="string" KeyPath="true" />
+          <RegistryValue Value="Unblock current directory" Type="string" KeyPath="true" />
           <RegistryValue Name="Icon" Value="[INSTALLFOLDER]unblocker.exe,0" Type="string" />
         </RegistryKey>
         <RegistryKey Root="HKMU" Key="Software\Classes\Directory\Background\shell\SaltSpectre.Unblocker\command">
           <RegistryValue Value='"[INSTALLFOLDER]unblocker.exe" "%V"' Type="string" />
         </RegistryKey>
       </Component>
-      
+
     </ComponentGroup>
-    
   </Fragment>
-  
+
 </Wix>

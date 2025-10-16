@@ -1,5 +1,7 @@
 //! Main entry point for SaltSpectre's File Unblocker
 
+#![windows_subsystem = "windows"]
+
 #[cfg(not(windows))]
 compile_error!("This application is designed for Windows only. Use cross-compilation targets like x86_64-pc-windows-msvc or aarch64-pc-windows-msvc");
 
@@ -15,7 +17,34 @@ use unblocker::{
     APP_NAME, APP_VERSION, APP_DESCRIPTION,
 };
 
+#[cfg(windows)]
+use windows::Win32::System::Console::{AttachConsole, AllocConsole, ATTACH_PARENT_PROCESS};
+
+/// Attach to parent console or allocate new one if needed
+#[cfg(windows)]
+fn ensure_console() {
+    unsafe {
+        // Try to attach to parent process console (if launched from cmd/powershell)
+        if AttachConsole(ATTACH_PARENT_PROCESS).is_err() {
+            // If no parent console, try to allocate a new one
+            let _ = AllocConsole();
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn ensure_console() {
+    // No-op on non-Windows platforms
+}
+
 fn main() {
+    // Check if --verbose flag is present before parsing full arguments
+    let needs_console = std::env::args().any(|arg| arg == "--verbose" || arg == "-v");
+
+    if needs_console {
+        ensure_console();
+    }
+
     env_logger::init();
     
     if let Err(e) = run() {
