@@ -44,6 +44,8 @@
     </Feature>
 
     <ui:WixUI Id="WixUI_FeatureTree" />
+    <!-- License.rtf is auto-generated from ../LICENSE during build -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
     <Property Id="ARPHELPLINK" Value="https://github.com/SaltSpectre/FileUnblocker" />

@@ -19,3 +19,6 @@ settings.local.json
 
 # Build transcripts
 build-transcript.txt
+
+# Generated files
+wix/License.rtf

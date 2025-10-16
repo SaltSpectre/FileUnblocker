@@ -98,17 +98,23 @@ jobs:
     strategy:
       matrix:
         platform: [x64, arm64]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-    
+
     - name: Install WiX
       run: dotnet tool install --global wix --verbosity quiet
+
+    - name: Install Pandoc
+      run: choco install pandoc -y
+
+    - name: Convert LICENSE to RTF
+      run: pandoc LICENSE -f markdown -t rtf -s -o wix/License.rtf
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
