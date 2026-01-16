@@ -1,10 +1,6 @@
 name: Build and Release
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -94,7 +90,6 @@ jobs:
   build-installer:
     needs: [generate-version, build]
     runs-on: windows-latest
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     strategy:
       matrix:
         platform: [x64, arm64]
@@ -154,7 +149,6 @@ jobs:
   create-release:
     needs: [generate-version, build, build-installer]
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     
     steps:
     - name: Download all artifacts
@@ -166,9 +160,9 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.generate-version.outputs.tag }}
-        name: "Release ${{ needs.generate-version.outputs.rust_version }}"
+        name: "File Unblocker ${{ needs.generate-version.outputs.rust_version }}"
         body: |
-          🚀 **SaltSpectre File Unblocker ${{ needs.generate-version.outputs.rust_version }}**
+          🔓 **SaltSpectre File Unblocker ${{ needs.generate-version.outputs.rust_version }}**
           
           Automated release built from commit ${{ github.sha }}
           
