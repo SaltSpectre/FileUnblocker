@@ -182,7 +182,7 @@ jobs:
           unblocker.exe --verbose "C:\path\to\directory" 
           ```
         files: artifacts/**/*
-        prerelease: true
-        draft: false
+        prerelease: false
+        draft: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
