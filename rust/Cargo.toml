@@ -11,13 +11,13 @@ name = "unblocker"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.0", features = ["derive"] }
-walkdir = "2.3"
-thiserror = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+walkdir = "2.5"
+thiserror = "2.0"
 log = "0.4"
-env_logger = "0.10"
+env_logger = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
-windows = { version = "0.58", features = [
+windows = { version = "0.62", features = [
     "Win32_Foundation",
     "Win32_Security", 
     "Win32_Security_Authorization",
@@ -28,10 +28,10 @@ windows = { version = "0.58", features = [
 ] }
 
 [dev-dependencies]
-tempfile = "3.8"
+tempfile = "3.24"
 
 [build-dependencies]
-embed-resource = "2.4"
+embed-resource = "3.0"
 
 [profile.release]
 lto = true

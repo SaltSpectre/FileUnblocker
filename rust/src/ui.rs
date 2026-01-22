@@ -21,7 +21,7 @@ pub fn show_message_box(text: &str, caption: &str, flags: MESSAGEBOX_STYLE) {
         let caption_wide: Vec<u16> = caption.encode_utf16().chain(Some(0)).collect();
         
         MessageBoxW(
-            HWND(std::ptr::null_mut()),
+            Some(HWND(std::ptr::null_mut())),
             PCWSTR(text_wide.as_ptr()),
             PCWSTR(caption_wide.as_ptr()),
             flags,

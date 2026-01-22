@@ -93,7 +93,7 @@ pub fn relaunch_as_admin() -> Result<()> {
         let operation: Vec<u16> = "runas".encode_utf16().chain(Some(0)).collect();
 
         let result = ShellExecuteW(
-            HWND(std::ptr::null_mut()),
+            Some(HWND(std::ptr::null_mut())),
             PCWSTR(operation.as_ptr()),
             PCWSTR(exe_path.as_ptr()),
             PCWSTR(params.as_ptr()),
