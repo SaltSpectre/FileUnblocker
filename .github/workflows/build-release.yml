@@ -162,23 +162,21 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.generate-version.outputs.tag }}
-        name: "File Unblocker ${{ needs.generate-version.outputs.rust_version }}"
+        name: "🔓 File Unblocker ${{ needs.generate-version.outputs.rust_version }}"
         body: |
-          🔓 **SaltSpectre File Unblocker ${{ needs.generate-version.outputs.rust_version }}**
+          *Automated release built from commit ${{ github.sha }}*
           
-          Automated release built from commit ${{ github.sha }}
-          
-          **Downloads:**
+          ## Downloads
           - `FileUnblocker-x64-${{ needs.generate-version.outputs.rust_version }}.msi` - **x64 MSI Installer** - Context menu integration
           - `FileUnblocker-arm64-${{ needs.generate-version.outputs.rust_version }}.msi` - **ARM64 MSI Installer** - Context menu integration
           - `portable-unblocker-x64.exe` - x64 Portable (Intel/AMD 64-bit)
-          - `portable-unblocker-arm64.exe` - ARM64 Portable (Windows on ARM)
+          - `portable-unblocker-arm64.exe` - ARM64 Portable (Windows on ARM64 devices and Apple silicon)
           
-          **Installation:**
+          ## Installation
           - **MSI Installer**: Run the MSI for your architecture and choose per-user or system-wide installation
           - **Portable**: Download appropriate executable and run directly (no context menu integration)
           
-          **Usage:**
+          ## Usage
           ```cmd
           unblocker.exe "C:\path\to\file.exe"
           unblocker.exe --verbose "C:\path\to\directory" 
