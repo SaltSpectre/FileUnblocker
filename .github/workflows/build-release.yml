@@ -43,7 +43,7 @@ jobs:
       msi_version: ${{ needs.generate-version.outputs.msi_version }}
         
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -51,7 +51,7 @@ jobs:
         targets: ${{ matrix.target }}
     
     - name: Cache cargo registry and target
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cargo/registry
@@ -83,7 +83,7 @@ jobs:
         echo "ARTIFACT_ARCH=$arch" >> $env:GITHUB_ENV
     
     - name: Upload portable executable
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: portable-unblocker-${{ env.ARTIFACT_ARCH }}
         path: ${{ env.ARTIFACT_NAME }}
@@ -97,10 +97,10 @@ jobs:
         platform: [x64, arm64]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
 
@@ -114,7 +114,7 @@ jobs:
       run: pandoc LICENSE -f markdown -t rtf -s -o wix/License.rtf
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: artifacts
         pattern: portable-unblocker-*
@@ -142,7 +142,7 @@ jobs:
         echo "MSI_NAME=$outputName" >> $env:GITHUB_ENV
     
     - name: Upload MSI installer
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: msi-installer-${{ matrix.platform }}
         path: wix/${{ env.MSI_NAME }}
@@ -154,12 +154,12 @@ jobs:
     
     steps:
     - name: Download all artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: artifacts
     
     - name: Create GitHub release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: ${{ needs.generate-version.outputs.tag }}
         name: "🔓 File Unblocker ${{ needs.generate-version.outputs.rust_version }}"
